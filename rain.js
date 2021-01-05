@@ -5,7 +5,7 @@ var canvas = document.getElementById("ciel");
 var ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-
+var gravité;
 const VENT = ['+', '-'];
 var directionDuVent = Math.floor( Math.random() * 2 );
 
@@ -13,10 +13,12 @@ var directionDuVent = Math.floor( Math.random() * 2 );
 var goutte = [];
 var indiceDeDirection = VENT[directionDuVent];
 
-// console.log(indiceDeDirection[2])
-for (let i = 0; i < 400; i++) {     
-    goutte[i] = new Goutte(indiceDeDirection); 
-};
+setInterval(() => {
+    for (let i = 0; i < 2400; i++) {     
+        goutte[i] = new Goutte(indiceDeDirection); 
+    };
+    
+}, 1000);
 
 //CONSTRUCTEUR DE GOUTTE
 function Goutte(indiceDeDirection) {
@@ -27,29 +29,38 @@ function Goutte(indiceDeDirection) {
     this.tailleDeGoutte = this.taille[this.tailleRandom];
     this.x= Math.random() * ( canvas.width-1 );
     this.y= Math.random() * ( canvas.height - 1 );
+    
     this.width= 1.5;
     this.height= this.tailleDeGoutte;
 
     switch (this.tailleDeGoutte) {
         case 1:
-            this.gravite = 1;
+            gravite = 1;
+            this.dy = 1;
             this.incidence = 0.5;
             this.color = "silver";
+            this.friction = 0.1;
             break;
         case 2 :
-            this.gravite = 2;
+            gravite = 2;
+            this.dy = 1.5;
             this.incidence = 1;
             this.color = "cadetblue";
+            this.friction = 0.15;
             break;
         case 3 : 
-            this.gravite = 4;
+            gravite = 4;
+            this.dy = 2;
             this.incidence = 1.5;
             this.color = "aquamarine";
+            this.friction = 0.17;
             break;
         case 4 :
-            this.gravite = 6;
+            gravite = 5;
+            this.dy = 4;
             this.incidence = 2;    
             this.color= "aqua";
+            this.friction = 0.19;
             break;
     }
     
@@ -63,21 +74,19 @@ function Goutte(indiceDeDirection) {
 
     //LA GOUTTE TOMBE
     this.tombe = function() { 
-        this.y += this.gravite;
+        this.y += this.dy;
         this.x += this.incidence;
         if (this.y + this.height >= canvas.height) { 
-            this.gravite = -this.gravite * 0.15;
-            if (this.y+this.height  <= canvas.height/10) {
-                this.gravite = -this.gravite;
+            this.dy = -this.dy * this.friction;
+            if (this.x + this.width > canvas.width) {
+                this.x = 0
+            } else if (this.x + this.width < 0) {
+                this.x = canvas.width
             }
 
-        } else if (this.x >= canvas.width) {
-            this.x = 0;
-        } else if (this.x + this.width <= 0) {
-            this.x = canvas.width;
-        } else if ((this.x + this.width >=canvas.width) && (this.y >= canvas.height)) {
-            this.y =0;
-        }
+        } else {
+            this.dy += 1;
+        } 
     }
     //LA GOUTTE TOMBE
     this.rebondit = function() { this.dy = -this.dy; }
@@ -86,6 +95,7 @@ function Goutte(indiceDeDirection) {
 //LA PLUIE COMMENCE A TOMBER
 function draw(){
     ctx.clearRect(0,0,canvas.width, canvas.height);
+    
     for (let i = 0; i < goutte.length; i++) {
         goutte[i].draw();
         goutte[i].tombe();
